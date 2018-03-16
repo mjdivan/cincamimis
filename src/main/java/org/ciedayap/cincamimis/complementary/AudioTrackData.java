@@ -5,10 +5,14 @@
  */
 package org.ciedayap.cincamimis.complementary;
 
+import java.io.Serializable;
+import java.time.ZonedDateTime;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.ciedayap.cincamimis.adapters.ZonedDateTimeAdapter;
 
 /**
  * It is responsible for managing the audio as complementary data 
@@ -17,7 +21,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlRootElement(name="audioData")
 @XmlType(propOrder={"initialTimestamp","duration","audioValue","geographyData"})
-public class AudioTrackData {
+public class AudioTrackData implements Serializable{
     /**
      * Instant in which the audio track has been initiated
      */
@@ -35,6 +39,17 @@ public class AudioTrackData {
      */
     private Gml geographyData;
     
+    /**
+     * Default constructor
+     */
+    public AudioTrackData()
+    {
+        initialTimestamp=null;
+        duration=null;
+        audioValue=null;
+        geographyData=null;
+    }
+    
     @Override
     public String toString()
     {
@@ -47,6 +62,7 @@ public class AudioTrackData {
      * @return the initialTimestamp
      */
     @XmlAttribute(name="initialTimestamp")
+    @XmlJavaTypeAdapter(ZonedDateTimeAdapter.class)
     public java.time.ZonedDateTime getInitialTimestamp() {
         return initialTimestamp;
     }

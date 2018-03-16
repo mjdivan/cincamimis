@@ -40,7 +40,31 @@ public class TranslateXML {
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);        
             m.marshal(instancia,writer);            
        } catch (JAXBException ex) {
-           ex.printStackTrace();
+           
+           return null;
+       }
+
+       return writer.toString();       
+   }
+
+   /**
+    * It converts an object using its own class type to xml
+    * @param instancia The object to be converted
+    * @return a string with the xml (sucess), and null in other case (failure).
+    */
+   public static String toXml(Object instancia)
+   {
+       if(instancia==null) return null;
+
+       StringWriter writer=new StringWriter();                
+       JAXBContext contexto;
+       try {
+            contexto = JAXBContext.newInstance(instancia.getClass());
+            Marshaller m=contexto.createMarshaller();
+            m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);        
+            m.marshal(instancia,writer);            
+       } catch (JAXBException ex) {
+           
            return null;
        }
 
@@ -57,8 +81,7 @@ public class TranslateXML {
    {
        if(xml==null || xml.length()==0) return null;
        if(clase==null) return null;
-
-       StringWriter writer=new StringWriter();                
+               
        JAXBContext contexto;
 
        Object ptr=null;
@@ -68,7 +91,7 @@ public class TranslateXML {
             InputStream is;
             is = new ByteArrayInputStream(xml.getBytes());
             ptr=um.unmarshal(is);
-       } catch (JAXBException ex) {
+       } catch (JAXBException ex) {ex.printStackTrace();
            return null;
        }
 

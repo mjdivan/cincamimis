@@ -5,12 +5,14 @@
  */
 package org.ciedayap.cincamimis.complementary;
 
+import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import org.ciedayap.utils.Conversions;
 import org.ciedayap.utils.TranslateXML;
 
 /**
@@ -23,9 +25,12 @@ import org.ciedayap.utils.TranslateXML;
  * @version 1.0
  */
 @XmlRootElement(name="complementaryDatum")
-@XmlType(propOrder={"mimeVersion","mimeContentType","hashControl","GML","pictureData","audioTrackData","videoData"})
-public class ComplementaryDatum {
-    private java.security.MessageDigest md5;
+@XmlType(propOrder={"mimeVersion","mimeContentType","hashControl","GML","pictureData","plainTextData","audioTrackData","videoData"})
+public class ComplementaryDatum implements Serializable{
+    /**
+     * It represents the hasher. This field must not be serialized.
+     */
+    private transient java.security.MessageDigest md5;
     /**
      * mime version associated with the complementary datum
      */
@@ -35,9 +40,14 @@ public class ComplementaryDatum {
      */
     private String mimeContentType;
     /**
-     * hashcontrol related to the complementary datum.
+     * hashcontrol computed directly from the complementary datum.
      */
     private String hashControl;
+    /**
+     * original hashcontrol received by the stream.
+     * This field must not be serialized.
+     */
+    private transient String originalHashControl;
     /**
      * Geography information as complementary datum
      */
@@ -47,16 +57,30 @@ public class ComplementaryDatum {
     private AudioTrackData audioTrackData;
     private VideoData videoData;
     
+    /**
+     * Default constructor
+     * @throws NoSuchAlgorithmException When MD5 is not available
+     */
+    public ComplementaryDatum() throws NoSuchAlgorithmException
+    {
+        md5=MessageDigest.getInstance("MD5");
+        mimeVersion=null;
+        mimeContentType=null;
+        hashControl=null;
+        originalHashControl=null;
+        GML=null;
+        pictureData=null;
+        plainTextData=null;
+        audioTrackData=null;
+        videoData=null;
+    }
+    
     @Override
     public String toString()
     {
         return "["+((this.getHashControl()!=null)?this.getHashControl():"-")+"";        
     }
 
-    public ComplementaryDatum()
-    {
-     md5=null;
-    }
     /**
      * @return the mimeVersion
      */
@@ -99,7 +123,7 @@ public class ComplementaryDatum {
      * @param hashControl the hashControl to set
      */
     public void setHashControl(String hashControl) {
-       // this.hashControl = hashControl; Only internally modifiable
+        this.originalHashControl = hashControl; 
     }
 
     /**
@@ -231,11 +255,26 @@ public class ComplementaryDatum {
             if(md5!=null) 
             {
                 md5.update(compl.getBytes());
-                this.hashControl= new String(md5.digest());
+                this.hashControl= Conversions.toHexString(md5.digest());
             }
             
             md5=MessageDigest.getInstance("MD5");
-            this.hashControl= new String(md5.digest(compl.getBytes()));
+            this.hashControl= Conversions.toHexString(md5.digest(compl.getBytes()));
         }
+    }
+    
+    /**
+     * The originalHashControl is established by the method setHashcontrol.
+     * However, the hashcontrol attribute is directly computed from the complementary datum.
+     * When the two hash are available, an evaluation is executed in this method.
+     * @return It will return null if the footprint or originalFootprint are null, 
+     * else an equality evaluation will be performed.
+     */
+    public Boolean evaluateFootprint()
+    {
+        if(this.originalHashControl==null) return null;
+        if(this.hashControl==null) return null;
+        
+        return originalHashControl.equalsIgnoreCase(hashControl);
     }
 }

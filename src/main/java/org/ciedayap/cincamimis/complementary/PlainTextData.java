@@ -5,6 +5,7 @@
  */
 package org.ciedayap.cincamimis.complementary;
 
+import java.io.Serializable;
 import java.util.Base64;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
@@ -18,7 +19,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlRootElement(name="plainText")
 @XmlType(propOrder={"language","plainDocument"})
-public class PlainTextData {
+public class PlainTextData implements Serializable{
     /**
      * Language in which the document is expressed
      */
@@ -27,6 +28,15 @@ public class PlainTextData {
      * The document itself as plain text expressed base64
      */
     private byte[] plainDocument;
+    
+    /**
+     * Default Constructor
+     */
+    public PlainTextData()
+    {
+        language=null;
+        plainDocument=null;
+    }
     
     @Override
     public String toString()

@@ -5,6 +5,7 @@
  */
 package org.ciedayap.cincamimis.complementary;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -18,12 +19,20 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlRootElement(name="complementaryData")
 @XmlType(propOrder={"complementaryDatum"})
-public class ComplementaryData {
+public class ComplementaryData implements Serializable{
     /**
      * The set of complementary data associated with a given measurement
      */
     private ArrayList<ComplementaryDatum> complementaryDatum;
 
+    /**
+     * Default constructor
+     */
+    public ComplementaryData()
+    {
+        complementaryDatum=new ArrayList<>();
+    }
+    
     /**
      * @return the complementaryDatum
      */

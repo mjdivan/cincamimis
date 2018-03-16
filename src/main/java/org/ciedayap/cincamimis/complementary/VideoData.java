@@ -5,10 +5,13 @@
  */
 package org.ciedayap.cincamimis.complementary;
 
+import java.io.Serializable;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.ciedayap.cincamimis.adapters.ZonedDateTimeAdapter;
 
 /**
  * It is responsible for managing the picture complementary data 
@@ -17,7 +20,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlRootElement(name="videoData")
 @XmlType(propOrder={"initialTimestamp","duration","videoValue","geographyData"})
-public class VideoData {
+public class VideoData implements Serializable{
     /**
      * Instant in which the video track has been initiated
      */
@@ -35,6 +38,17 @@ public class VideoData {
      */
     private Gml geographyData;
     
+    /**
+     * Default Constructor
+     */
+    public VideoData()
+    {
+        initialTimestamp=null;
+        duration=null;
+        videoValue=null;
+        geographyData=null;
+    }
+    
     @Override
     public String toString()
     {
@@ -47,6 +61,7 @@ public class VideoData {
      * @return the initialTimestamp
      */
     @XmlAttribute(name="initialTimestamp")
+    @XmlJavaTypeAdapter(ZonedDateTimeAdapter.class)
     public java.time.ZonedDateTime getInitialTimestamp() {
         return initialTimestamp;
     }

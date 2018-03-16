@@ -5,6 +5,7 @@
  */
 package org.ciedayap.cincamimis;
 
+import java.io.Serializable;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -18,11 +19,11 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlRootElement(name="cincamimis")
 @XmlType(propOrder={"version","dsAdapterID","measurements"})
-public class Cincamimis {
+public class Cincamimis implements Serializable{
     /**
      * Version associated with the CINCAMI/MIS schema
      */
-    private String version="2.0";
+    private String version;
     /**
      * ID related to the measurement adapter
      */
@@ -43,6 +44,16 @@ public class Cincamimis {
         return sb.toString();
     }
 
+    /**
+     * Default constructor
+     */
+    public Cincamimis()
+    {
+        version="2.0";
+        dsAdapterID=null;
+        measurements=null;
+    }   
+    
     /**
      * @return the version associated with the CINCAMI/MIS schema
      */

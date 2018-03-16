@@ -5,6 +5,7 @@
  */
 package org.ciedayap.cincamimis.complementary;
 
+import java.io.Serializable;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -18,7 +19,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 @XmlRootElement(name="pictureData")
 @XmlType(propOrder={"timestamp","pictureValue","geographyData"})
-public class PictureData {
+public class PictureData implements Serializable{
     /**
      * Picture´s datetime
      */
@@ -31,6 +32,16 @@ public class PictureData {
      * Optionally, a picture could be associated with a GML data expressed as byte array
      */
     private Gml geographyData;
+    
+    /**
+     * Default Constructor
+     */
+    public PictureData()
+    {
+        timestamp=null;
+        pictureValue=null;
+        geographyData=null;
+    }
     
     @Override
     public String toString()

@@ -5,6 +5,7 @@
  */
 package org.ciedayap.cincamimis.adapters;
 
+import com.google.gson.JsonSerializer;
 import java.time.ZonedDateTime;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
