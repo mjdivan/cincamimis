@@ -6,6 +6,7 @@
 package org.ciedayap.cincamimis;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -234,6 +235,29 @@ public class MeasurementItem implements Serializable{
         return mi;
     }
     
+    /**
+     * It creates a deterministic MeasurementItem object with the given parameters. This object does not contain complementary data 
+     * and context information
+     * @param idEntity ID entity in the M&E project
+     * @param dsid Data source ID
+     * @param format Native format related to the data source
+     * @param idMetric ID Metric associated with the entity´s attribute
+     * @param bd The value for the IDMetric measurement
+     * @return A MeasurementItem including the given parameters
+     * @throws NoSuchAlgorithmException It is fired when MD5 is not implemmented on the platform 
+     */
+    public static MeasurementItem factory(String idEntity,String dsid, String format,String idMetric,BigDecimal bd) throws NoSuchAlgorithmException
+    {
+        if(idEntity==null || idMetric==null || bd==null || dsid==null || format==null) return null;
+        
+        MeasurementItem mi=new MeasurementItem();
+        mi.setDataSourceID(dsid);
+        mi.setIdEntity(idEntity);
+        mi.setMeasurement(Measurement.factoryMeasurementWithoutCD(idMetric, bd));
+        mi.setOriginalDataFormat(format);
+        
+        return mi;
+    }
     
     public static void main(String args[]) throws LikelihoodDistributionException, NoSuchAlgorithmException
     {
