@@ -24,10 +24,11 @@ import org.ciedayap.utils.ZipUtil;
 public class test {
     public static void main(String args[]) throws LikelihoodDistributionException, NoSuchAlgorithmException, Exception
     {
-          //testCincamimis_xml_and_compression();
-          //testCincamimis_json_and_compression(); 
+        //testCincamimis_xml_and_compression();
+        //testCincamimis_json_and_compression(); 
         //generarEstadisticasXML(1000,100);
-        generarEstadisticasJSON(1000,100);
+        //generarEstadisticasJSON(1000,100);
+        oneExample();
     }
     
     public static void testCincamimis_xml_and_compression() throws LikelihoodDistributionException, NoSuchAlgorithmException, Exception
@@ -246,5 +247,28 @@ public class test {
             ((ArrayList)rec).clear();            
         }
         tabla.clear();
+    }
+
+    private static void oneExample() throws LikelihoodDistributionException, NoSuchAlgorithmException {
+       LikelihoodDistribution ld=LikelihoodDistribution.factoryRandomDistributionEqualLikelihood(2L, 5L);        
+       MeasurementItem m=MeasurementItem.factory("idEntity1", "dsid1", "format", "idMetric1", ld);
+       MeasurementItemSet mis=new MeasurementItemSet();
+       mis.add(m);
+       Context c=Context.factoryDeterministicValueWithoutCD("idMetric3", BigDecimal.valueOf(30.5));
+       MeasurementItem m2=MeasurementItem.factory("idEntity1", "dsid2", "format", "idMetric2", BigDecimal.valueOf(37.5));
+       m2.setContext(c);
+       mis.add(m2);
+       
+       Cincamimis flujo=new Cincamimis();
+       flujo.setDsAdapterID("adapter1");
+       flujo.setMeasurements(mis);
+       
+       //It transforms the CINCAMI/MIS objects to a XML string
+       String xml=TranslateXML.toXml(flujo.getClass(),flujo);
+       System.out.println(xml);   
+       
+       String json=TranslateJSON.toJSON(flujo);
+       System.out.println(json);
+                 
     }
 }

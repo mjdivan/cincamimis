@@ -8,6 +8,7 @@ package org.ciedayap.utils;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -37,6 +38,7 @@ public class TranslateXML {
        try {
             contexto = JAXBContext.newInstance(clase);
             Marshaller m=contexto.createMarshaller();
+            m.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);        
             m.marshal(instancia,writer);            
        } catch (JAXBException ex) {
@@ -44,7 +46,13 @@ public class TranslateXML {
            return null;
        }
 
-       return writer.toString();       
+       String utf8;
+       try{
+           utf8=new String(writer.toString().getBytes("UTF-8"));
+       }catch(UnsupportedEncodingException e)
+       {return null;}
+       
+       return utf8;       
    }
 
    /**
@@ -61,6 +69,7 @@ public class TranslateXML {
        try {
             contexto = JAXBContext.newInstance(instancia.getClass());
             Marshaller m=contexto.createMarshaller();
+            m.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);        
             m.marshal(instancia,writer);            
        } catch (JAXBException ex) {
@@ -68,7 +77,13 @@ public class TranslateXML {
            return null;
        }
 
-       return writer.toString();       
+       String utf8;
+       try{
+           utf8=new String(writer.toString().getBytes("UTF-8"));
+       }catch(UnsupportedEncodingException e)
+       {return null;}
+       
+       return utf8;       
    }
 
    /**
