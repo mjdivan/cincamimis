@@ -34,7 +34,7 @@ public class test {
     public static void testCincamimis_xml_and_compression() throws LikelihoodDistributionException, NoSuchAlgorithmException, Exception
     {
        LikelihoodDistribution ld=LikelihoodDistribution.factoryRandomDistributionEqualLikelihood(3L, 5L);        
-       MeasurementItem m=MeasurementItem.factory("idEntity1", "dsid1", "format", "idMetric1", ld);
+       MeasurementItem m=MeasurementItem.factory("idEntity1", "dsid1", "format", "idMetric1", ld,"PRJ1","EC1");
        MeasurementItemSet mis=new MeasurementItemSet();
        mis.add(m);
        mis.add(m);
@@ -69,7 +69,7 @@ public class test {
     public static void testCincamimis_json_and_compression() throws LikelihoodDistributionException, NoSuchAlgorithmException, Exception
     {
        LikelihoodDistribution ld=LikelihoodDistribution.factoryRandomDistributionEqualLikelihood(3L, 5L);        
-       MeasurementItem m=MeasurementItem.factory("idEntity1", "dsid1", "format", "idMetric1", ld);
+       MeasurementItem m=MeasurementItem.factory("idEntity1", "dsid1", "format", "idMetric1", ld,"PRJ1","EC1");
        MeasurementItemSet mis=new MeasurementItemSet();
        mis.add(m);
        mis.add(m);
@@ -121,7 +121,7 @@ public class test {
           for(int j=0;j<=i;j++)
           {//Genero desde 1 hasta i (multiplo de salto) mensajes hastya llegar a volMax
               MeasurementItem mi=MeasurementItem.factory("idEntity1", "dataSource1", "myFormat", "idMetric"+j, 
-                      BigDecimal.TEN.multiply(BigDecimal.valueOf(r.nextGaussian())));
+                      BigDecimal.TEN.multiply(BigDecimal.valueOf(r.nextGaussian())),"PRJ1","EC1");
               if((j%2)==0) mi.setContext(myContext);
               mis.add(mi);
           }
@@ -194,7 +194,7 @@ public class test {
           for(int j=0;j<=i;j++)
           {//Genero desde 1 hasta i (multiplo de salto) mensajes hastya llegar a volMax
               MeasurementItem mi=MeasurementItem.factory("idEntity1", "dataSource1", "myFormat", "idMetric"+j, 
-                      BigDecimal.TEN.multiply(BigDecimal.valueOf(r.nextGaussian())));
+                      BigDecimal.TEN.multiply(BigDecimal.valueOf(r.nextGaussian())),"PRJ1","EC1");
               if((j%2)==0) mi.setContext(myContext);
               mis.add(mi);
           }
@@ -251,11 +251,11 @@ public class test {
 
     private static void oneExample() throws LikelihoodDistributionException, NoSuchAlgorithmException {
        LikelihoodDistribution ld=LikelihoodDistribution.factoryRandomDistributionEqualLikelihood(2L, 5L);        
-       MeasurementItem m=MeasurementItem.factory("idEntity1", "dsid1", "format", "idMetric1", ld);
+       MeasurementItem m=MeasurementItem.factory("idEntity1", "dsid1", "format", "idMetric1", ld,"PRJ1","EC1");
        MeasurementItemSet mis=new MeasurementItemSet();
        mis.add(m);
        Context c=Context.factoryDeterministicValueWithoutCD("idMetric3", BigDecimal.valueOf(30.5));
-       MeasurementItem m2=MeasurementItem.factory("idEntity1", "dsid2", "format", "idMetric2", BigDecimal.valueOf(37.5));
+       MeasurementItem m2=MeasurementItem.factory("idEntity1", "dsid2", "format", "idMetric2", BigDecimal.valueOf(37.5),"PRJ1","EC1");
        m2.setContext(c);
        mis.add(m2);
        

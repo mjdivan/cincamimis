@@ -73,7 +73,7 @@ public class TranslateXML {
             m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);        
             m.marshal(instancia,writer);            
        } catch (JAXBException ex) {
-           
+           ex.printStackTrace();
            return null;
        }
 

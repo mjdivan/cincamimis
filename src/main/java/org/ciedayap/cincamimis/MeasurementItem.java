@@ -22,7 +22,7 @@ import org.ciedayap.utils.TranslateXML;
  * @version 1.0
  */
 @XmlRootElement(name="measurementItem")
-@XmlType(propOrder={"dataSourceID","originalDataFormat","footprint","idEntity","measurement","context"})
+@XmlType(propOrder={"dataSourceID","originalDataFormat","footprint","idEntity","measurement","context","projectID"})
 public class MeasurementItem implements Serializable{
     /**
      * It represents the hasher. The "transient" modifier is specified for avoiding the serialization of this attribute
@@ -57,6 +57,14 @@ public class MeasurementItem implements Serializable{
      * This field does not have to be serialized.
      */
     private transient String originalFootprint;
+    /**
+     * The related projectID
+     */
+    private String projectID;
+    /**
+     * The related entity category ID
+     */
+    private String entityCategoryID;
     
     public MeasurementItem() throws NoSuchAlgorithmException
     {
@@ -68,6 +76,8 @@ public class MeasurementItem implements Serializable{
         originalDataFormat=null;
         footprint=null;
         originalFootprint=null;
+        projectID=null;
+        entityCategoryID=null;
     }
     
     @Override
@@ -212,56 +222,93 @@ public class MeasurementItem implements Serializable{
     }
 
     /**
-     * It creates a MeasurementItem object with the given parameters. This object does not contain complementary data 
-     * and context information
+     * It creates a MeasurementItem object with the given parameters.This object does not contain complementary data 
+ and context information
      * @param idEntity ID entity in the M&E project
      * @param dsid Data source ID
      * @param format Native format related to the data source
      * @param idMetric ID Metric associated with the entity´s attribute
      * @param ld The likelihood distribution for the IDMetric measurement
+     * @param projectID the project ID
+     * @param ecID The entity category ID
      * @return A MeasurementItem including the given parameters
      * @throws LikelihoodDistributionException 
      */
-    public static MeasurementItem factory(String idEntity,String dsid, String format,String idMetric,LikelihoodDistribution ld) throws LikelihoodDistributionException, NoSuchAlgorithmException
+    public static MeasurementItem factory(String idEntity,String dsid, String format,String idMetric,LikelihoodDistribution ld,String projectID,String ecID) throws LikelihoodDistributionException, NoSuchAlgorithmException
     {
-        if(idEntity==null || idMetric==null || ld==null || dsid==null || format==null) return null;
+        if(idEntity==null || idMetric==null || ld==null || dsid==null || format==null || projectID==null || ecID==null) return null;
         
         MeasurementItem mi=new MeasurementItem();
         mi.setDataSourceID(dsid);
         mi.setIdEntity(idEntity);
         mi.setMeasurement(Measurement.factoryMeasurementWithoutCD(idMetric,ld));
         mi.setOriginalDataFormat(format);
+        mi.setProjectID(projectID);
+        mi.setEntityCategoryID(ecID);
         
         return mi;
     }
     
     /**
-     * It creates a deterministic MeasurementItem object with the given parameters. This object does not contain complementary data 
-     * and context information
+     * It creates a deterministic MeasurementItem object with the given parameters.This object does not contain complementary data 
+ and context information
      * @param idEntity ID entity in the M&E project
      * @param dsid Data source ID
      * @param format Native format related to the data source
      * @param idMetric ID Metric associated with the entity´s attribute
      * @param bd The value for the IDMetric measurement
+     * @param projectID The project ID
+     * @param ecID The entity category ID
      * @return A MeasurementItem including the given parameters
      * @throws NoSuchAlgorithmException It is fired when MD5 is not implemmented on the platform 
      */
-    public static MeasurementItem factory(String idEntity,String dsid, String format,String idMetric,BigDecimal bd) throws NoSuchAlgorithmException
+    public static MeasurementItem factory(String idEntity,String dsid, String format,String idMetric,BigDecimal bd,String projectID,String ecID) throws NoSuchAlgorithmException
     {
-        if(idEntity==null || idMetric==null || bd==null || dsid==null || format==null) return null;
+        if(idEntity==null || idMetric==null || bd==null || dsid==null || format==null || projectID==null || ecID==null) return null;
         
         MeasurementItem mi=new MeasurementItem();
         mi.setDataSourceID(dsid);
         mi.setIdEntity(idEntity);
         mi.setMeasurement(Measurement.factoryMeasurementWithoutCD(idMetric, bd));
         mi.setOriginalDataFormat(format);
+        mi.setProjectID(projectID);
         
         return mi;
     }
     
     public static void main(String args[]) throws LikelihoodDistributionException, NoSuchAlgorithmException
     {
-        MeasurementItem mi=MeasurementItem.factory("IDEntity1","dsid_1", "plaintext", "idMetric1", LikelihoodDistribution.factoryRandomDistributionEqualLikelihood(3L, 5l));
+        MeasurementItem mi=MeasurementItem.factory("IDEntity1","dsid_1", "plaintext", "idMetric1", LikelihoodDistribution.factoryRandomDistributionEqualLikelihood(3L, 5l),"PRJ1","EC1");
         System.out.println(TranslateXML.toXml(mi.getClass(), mi));
+    }
+
+    /**
+     * @return the projectID
+     */
+    @XmlAttribute(name="projectID",required=true)    
+    public String getProjectID() {
+        return projectID;
+    }
+
+    /**
+     * @param projectID the projectID to set
+     */
+    public void setProjectID(String projectID) {
+        this.projectID = projectID;
+    }
+
+    /**
+     * @return the entityCategoryID
+     */
+    @XmlAttribute(name="entityCategoryID",required=true)        
+    public String getEntityCategoryID() {
+        return entityCategoryID;
+    }
+
+    /**
+     * @param entityCategoryID the entityCategoryID to set
+     */
+    public void setEntityCategoryID(String entityCategoryID) {
+        this.entityCategoryID = entityCategoryID;
     }
 }
