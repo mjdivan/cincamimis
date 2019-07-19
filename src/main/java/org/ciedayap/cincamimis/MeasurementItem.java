@@ -22,7 +22,7 @@ import org.ciedayap.utils.TranslateXML;
  * @version 1.0
  */
 @XmlRootElement(name="measurementItem")
-@XmlType(propOrder={"dataSourceID","originalDataFormat","footprint","idEntity","measurement","context","projectID"})
+@XmlType(propOrder={"dataSourceID","originalDataFormat","footprint","idEntity","measurement","context","projectID","entityCategoryID"})
 public class MeasurementItem implements Serializable{
     /**
      * It represents the hasher. The "transient" modifier is specified for avoiding the serialization of this attribute
@@ -272,6 +272,7 @@ public class MeasurementItem implements Serializable{
         mi.setMeasurement(Measurement.factoryMeasurementWithoutCD(idMetric, bd));
         mi.setOriginalDataFormat(format);
         mi.setProjectID(projectID);
+        mi.setEntityCategoryID(ecID);
         
         return mi;
     }
