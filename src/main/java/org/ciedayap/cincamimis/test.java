@@ -5,13 +5,16 @@
  */
 package org.ciedayap.cincamimis;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Random;
+import org.ciedayap.cincamimis.envelope.MAEnvelope;
 import org.ciedayap.utils.Conversions;
 import org.ciedayap.utils.TranslateJSON;
 import org.ciedayap.utils.TranslateXML;
@@ -28,7 +31,9 @@ public class test {
         //testCincamimis_json_and_compression(); 
         //generarEstadisticasXML(1000,100);
         //generarEstadisticasJSON(1000,100);
-        oneExample();
+        //oneExample();
+        //generarEstadisticasJSON_EnvelopeVaryingMeasurements(5000,100);
+        generarEstadisticasJSON_EnvelopeVaryingTime(500,5L);
     }
     
     public static void testCincamimis_xml_and_compression() throws LikelihoodDistributionException, NoSuchAlgorithmException, Exception
@@ -249,7 +254,7 @@ public class test {
         tabla.clear();
     }
 
-    private static void oneExample() throws LikelihoodDistributionException, NoSuchAlgorithmException {
+    private static void oneExample() throws LikelihoodDistributionException, NoSuchAlgorithmException, UnsupportedEncodingException {
        LikelihoodDistribution ld=LikelihoodDistribution.factoryRandomDistributionEqualLikelihood(2L, 5L);        
        MeasurementItem m=MeasurementItem.factory("idEntity1", "dsid1", "format", "idMetric1", ld,"PRJ1","EC1");
        MeasurementItemSet mis=new MeasurementItemSet();
@@ -269,6 +274,222 @@ public class test {
        
        String json=TranslateJSON.toJSON(flujo);
        System.out.println(json);
-                 
+       
+       MessageDigest md=MessageDigest.getInstance("MD5");
+       md.update(xml.getBytes());                
+       String fp=Conversions.toHexString(md.digest());
+       
+       MAEnvelope origin=MAEnvelope.create("adapter1", fp, xml, 60L);
+       origin.addMA("adapter2", (short)2);
+       origin.addMA("adapter3", (short)3);
+       String envelope_xml=TranslateXML.toXml(origin);
+       System.out.println(envelope_xml);
+       MAEnvelope retorno=(MAEnvelope) TranslateXML.toObject(MAEnvelope.class, envelope_xml);
+       
+       md.update(retorno.getOriginalMessage().getBytes("UTF-8"));                
+       String fp2=Conversions.toHexString(md.digest());
+       System.out.println("Original Fingerprint: "+fp+" Cmp: "+fp2);
+       System.out.println("Sending GF the Original Message...");
+       System.out.println(new String(retorno.getOriginalMessage().getBytes("UTF-8")));              
     }
+    
+    public static final void generarEstadisticasJSON_EnvelopeVaryingMeasurements(Integer volMax,Integer salto) throws LikelihoodDistributionException, NoSuchAlgorithmException, Exception
+    {
+        LikelihoodDistribution ld;
+        ld = LikelihoodDistribution.factoryRandomDistributionEqualLikelihood(3L, 5L);        
+        Context myContext=Context.factoryEstimatedValuesWithoutCD("idMetricContextProperty", ld);
+        Random r=new Random();
+        
+        ArrayList tabla=new ArrayList();
+        ArrayList registro;
+
+        for(Integer i=salto; i<=volMax;i=i+salto)
+        {
+          System.gc();
+          
+          registro=new ArrayList();
+          Cincamimis flujo=new Cincamimis();
+          flujo.setDsAdapterID("dsAdapter1");
+          MeasurementItemSet mis=new MeasurementItemSet();
+          for(int j=0;j<=i;j++)
+          {//Genero desde 1 hasta i (multiplo de salto) mensajes hastya llegar a volMax
+              MeasurementItem mi=MeasurementItem.factory("idEntity1", "dataSource1", "myFormat", "idMetric"+j, 
+                      BigDecimal.TEN.multiply(BigDecimal.valueOf(r.nextGaussian())),"PRJ1","EC1");
+              if((j%2)==0) mi.setContext(myContext);
+              mis.add(mi);
+          }
+          
+          flujo.setMeasurements(mis);
+          registro.add(i);//# measurements
+                  
+          Long before,after;
+          before=after=0L;
+                              
+          String json=TranslateJSON.toJSON(flujo);
+          
+          before=System.nanoTime();
+          MessageDigest md=MessageDigest.getInstance("MD5");
+          md.update(json.getBytes());                
+          String fp=Conversions.toHexString(md.digest());
+          after=System.nanoTime();// 
+          registro.add(after-before);//1. elapsed time in the fingerprint calculus
+          
+          registro.add(json.getBytes().length);//4. Bytes associated with the original message
+          
+          before=System.nanoTime();
+          MAEnvelope origin=MAEnvelope.create("adapter1", fp, json, 60L);
+          origin.addMA("adapter2", (short)2);
+          origin.addMA("adapter3", (short)3);
+          after=System.nanoTime();
+          registro.add(after-before);//4. elapsed time in the envelope creation
+
+          before=System.nanoTime();
+          String enveloped=TranslateJSON.toJSON(origin);
+          after=System.nanoTime();
+          registro.add(after-before);//5. Elapsed time in Object-JSON translation for the enveloped message                    
+          
+          registro.add(enveloped.getBytes().length);//6. Enveloped Byte Size
+          
+          before=System.nanoTime();
+          byte bjson[]=ZipUtil.compressGZIP(enveloped);
+          after=System.nanoTime();
+          registro.add(after-before); //7. elapsed time compression gzip
+          registro.add(bjson.length);//8. compressed bytes
+          
+          before=System.nanoTime();
+          String ebjson=ZipUtil.decompressGZIP(bjson);
+          after=System.nanoTime();
+          registro.add(after-before);//9.elapsed time descompressed
+
+          before=System.nanoTime();
+          MAEnvelope restaurajson=(MAEnvelope) TranslateJSON.toObject(MAEnvelope.class, ebjson);
+          after=System.nanoTime();
+          registro.add(after-before);//10.elapsed tyme json to object
+          
+          Boolean check_json=(json.equalsIgnoreCase(restaurajson.getOriginalMessage()));
+          registro.add(check_json);//11. equal   
+          tabla.add(registro);
+          
+          if(Objects.equals(i, salto))
+          {
+            System.out.println("JSON");
+            System.out.println("1.#Measurements 2.(ns) Fingerprint 3.(bytes)Original Message  4.(ns) Envelope 5.(ns) CreatingEnvelopedJSON "
+                    + "6.(bytes) Enveloped Message Size 7.(ns)GZIP 8.Compressed_bytes  9.(ns)UnGZIP  10.(ns)xmlToObject  11.Integrity");
+          }
+          
+          for(Object ptr:registro)
+            {
+                System.out.print(ptr+";");
+            }
+          System.out.println();
+        }
+        
+        for(Object rec:tabla)
+        {
+            ((ArrayList)rec).clear();            
+        }
+        tabla.clear();
+    }
+    
+    public static final void generarEstadisticasJSON_EnvelopeVaryingTime(Integer messageSize,Long minutes) throws LikelihoodDistributionException, NoSuchAlgorithmException, Exception
+    {
+        LikelihoodDistribution ld;
+        ld = LikelihoodDistribution.factoryRandomDistributionEqualLikelihood(3L, 5L);        
+        Context myContext=Context.factoryEstimatedValuesWithoutCD("idMetricContextProperty", ld);
+        Random r=new Random();
+        
+        ArrayList tabla=new ArrayList();
+        ArrayList registro;
+
+        Long start=System.nanoTime();
+        boolean title=true;
+
+        //The same stream in each message
+          Cincamimis flujo=new Cincamimis();
+          flujo.setDsAdapterID("dsAdapter1");
+          MeasurementItemSet mis=new MeasurementItemSet();
+          for(int j=0;j<=messageSize;j++)
+          {//Genero desde 1 hasta i (multiplo de salto) mensajes hastya llegar a volMax
+              MeasurementItem mi=MeasurementItem.factory("idEntity1", "dataSource1", "myFormat", "idMetric"+j, 
+                      BigDecimal.TEN.multiply(BigDecimal.valueOf(r.nextGaussian())),"PRJ1","EC1");
+              if((j%2)==0) mi.setContext(myContext);
+              mis.add(mi);
+          }
+          
+          flujo.setMeasurements(mis);
+
+        while((System.nanoTime()-start)<=(minutes*60000000000L))
+        {          
+          registro=new ArrayList();
+          registro.add(ZonedDateTime.now());//# TimeStamp
+          
+          Long before,after;
+          before=after=0L;
+                              
+          String json=TranslateJSON.toJSON(flujo);          
+          before=System.nanoTime();
+          MessageDigest md=MessageDigest.getInstance("MD5");
+          md.update(json.getBytes());                
+          String fp=Conversions.toHexString(md.digest());
+          after=System.nanoTime();// 
+          registro.add(after-before);//1. elapsed time in the fingerprint calculus
+          
+          registro.add(json.getBytes().length);//4. Bytes associated with the original message
+          
+          before=System.nanoTime();
+          MAEnvelope origin=MAEnvelope.create("adapter1", fp, json, 60L);
+          origin.addMA("adapter2", (short)2);
+          origin.addMA("adapter3", (short)3);
+          after=System.nanoTime();
+          registro.add(after-before);//4. elapsed time in the envelope creation
+
+          before=System.nanoTime();
+          String enveloped=TranslateJSON.toJSON(origin);
+          after=System.nanoTime();
+          registro.add(after-before);//5. Elapsed time in Object-JSON translation for the enveloped message                    
+          
+          registro.add(enveloped.getBytes().length);//6. Enveloped Byte Size
+          
+          before=System.nanoTime();
+          byte bjson[]=ZipUtil.compressGZIP(enveloped);
+          after=System.nanoTime();
+          registro.add(after-before); //7. elapsed time compression gzip
+          registro.add(bjson.length);//8. compressed bytes
+          
+          before=System.nanoTime();
+          String ebjson=ZipUtil.decompressGZIP(bjson);
+          after=System.nanoTime();
+          registro.add(after-before);//9.elapsed time descompressed
+
+          before=System.nanoTime();
+          MAEnvelope restaurajson=(MAEnvelope) TranslateJSON.toObject(MAEnvelope.class, ebjson);
+          after=System.nanoTime();
+          registro.add(after-before);//10.elapsed tyme json to object
+          
+          Boolean check_json=(json.equalsIgnoreCase(restaurajson.getOriginalMessage()));
+          registro.add(check_json);//11. equal   
+          tabla.add(registro);
+          
+          if(title)
+          {
+            System.out.println("JSON");
+            System.out.println("1.#TimeStamp 2.(ns) Fingerprint 3.(bytes)Original Message  4.(ns) Envelope 5.(ns) CreatingEnvelopedJSON "
+                    + "6.(bytes) Enveloped Message Size 7.(ns)GZIP 8.Compressed_bytes  9.(ns)UnGZIP  10.(ns)xmlToObject  11.Integrity");
+            title=false;
+          }
+          
+          for(Object ptr:registro)
+            {
+                System.out.print(ptr+";");
+            }
+          System.out.println();
+        }
+        
+        for(Object rec:tabla)
+        {
+            ((ArrayList)rec).clear();            
+        }
+        tabla.clear();
+    }
+    
 }
