@@ -9,11 +9,13 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import org.ciedayap.utils.Conversions;
+import org.ciedayap.utils.TranslateJSON;
 import org.ciedayap.utils.TranslateXML;
 
 /**
@@ -199,6 +201,7 @@ public class MeasurementItem implements Serializable{
             {
                 md5.update(xml.getBytes());
                 this.footprint= Conversions.toHexString(md5.digest());
+                return;
             }
             
             md5=MessageDigest.getInstance("MD5");
@@ -277,12 +280,6 @@ public class MeasurementItem implements Serializable{
         return mi;
     }
     
-    public static void main(String args[]) throws LikelihoodDistributionException, NoSuchAlgorithmException
-    {
-        MeasurementItem mi=MeasurementItem.factory("IDEntity1","dsid_1", "plaintext", "idMetric1", LikelihoodDistribution.factoryRandomDistributionEqualLikelihood(3L, 5l),"PRJ1","EC1");
-        System.out.println(TranslateXML.toXml(mi.getClass(), mi));
-    }
-
     /**
      * @return the projectID
      */
@@ -312,4 +309,88 @@ public class MeasurementItem implements Serializable{
     public void setEntityCategoryID(String entityCategoryID) {
         this.entityCategoryID = entityCategoryID;
     }
+    
+    public String measureToText()
+    {
+        if(entityCategoryID==null || this.idEntity==null || this.projectID==null || this.dataSourceID==null) return null;
+        if(this.measurement==null || measurement.getMeasure()==null) return null;
+                        
+        StringBuilder common=new StringBuilder();
+        common.append("{")
+                .append(projectID).append(";")
+                .append(entityCategoryID).append(";")
+                .append(idEntity).append(";")
+                .append(dataSourceID)
+           .append("}");
+        
+        StringBuilder tuple=new StringBuilder();
+        //Measure
+        tuple.append(common.toString()).append(measurement.measureToText()).append("*");
+        
+        //Context
+        if(this.context!=null && context.getMeasurements()!=null)
+        {
+          for(Measurement pctx:context.getMeasurements())
+          {
+            tuple.append(common.toString()).append(pctx.measureToText()).append("*");              
+          }
+        }
+       
+        common.delete(0, common.length());
+        
+        return tuple.toString();
+    }
+
+    public static MeasurementItem fromText(String val) throws LikelihoodDistributionException, NoSuchAlgorithmException
+    {
+        if(val==null || val.equalsIgnoreCase("")) return null;
+        
+        int s=val.indexOf("{");
+        int e=val.indexOf("}");
+        if(s<0 || e<0) return null;
+        String keys[]=(val.substring(s+1, e)).split(";");
+        if(keys==null || keys.length!=4) return null;
+                
+        String rest=val.substring(e+1, val.length());
+        rest=rest.replace("*", "");//In case of end character is present, it is removed.
+        Measurement m2=Measurement.fromText(rest);
+        if(m2==null) return null;
+        
+        MeasurementItem mi=new MeasurementItem();
+        mi.setProjectID(keys[0]);
+        mi.setEntityCategoryID(keys[1]);
+        mi.setIdEntity(keys[2]);
+        mi.setDataSourceID(keys[3]);        
+        mi.setMeasurement(m2);
+        mi.setOriginalDataFormat("raw");
+                                
+        return mi;
+    }
+    
+    public static void main(String args[]) throws LikelihoodDistributionException, NoSuchAlgorithmException
+    {
+        MeasurementItem mi=MeasurementItem.factory("IDEntity1","dsid_1", "plaintext", "idMetric1", LikelihoodDistribution.factoryRandomDistributionEqualLikelihood(3L, 5l),"PRJ1","EC1");
+        
+        String xml=TranslateXML.toXml(mi.getClass(), mi);
+        String json=TranslateJSON.toJSON(mi);
+        String brief=mi.measureToText();
+        System.out.println(xml);
+        System.out.println(json);        
+        System.out.println(brief);
+        System.out.println("Sizes -> XML: "+(xml.getBytes().length)+" JSON: "+(json.getBytes().length)+" Brief: "+(brief.getBytes().length));
+        
+        MeasurementItem mi2=fromText(brief);
+        if(mi2!=null)
+        {
+            System.out.println("ProjectID: "+mi2.getProjectID());
+            System.out.println("EC-ID: "+mi2.getEntityCategoryID());
+            System.out.println("EntityID: "+mi2.getIdEntity());
+            System.out.println("dsID: "+mi2.getDataSourceID());
+            System.out.println("Datetime: "+mi2.getMeasurement().getDatetime());
+            System.out.println("MetricID: "+mi2.getMeasurement().getIdMetric());
+            System.out.println("Value: "+mi2.getMeasurement().getMeasure().getQuantitative().toString());
+        }
+    }
+
+    
 }

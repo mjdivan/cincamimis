@@ -6,11 +6,14 @@
 package org.ciedayap.cincamimis;
 
 import java.io.Serializable;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import org.ciedayap.utils.TranslateJSON;
+import org.ciedayap.utils.TranslateXML;
 
 /**
  * Container of the set of measurements
@@ -124,5 +127,69 @@ public class MeasurementItemSet implements Serializable{
         itemsQuantity=(measurementItems!=null)?measurementItems.size():0;
     }
 
-   
+    public String measureToText()
+    {
+        if(measurementItems==null || measurementItems.isEmpty()) return null;
+        
+        StringBuilder sb=new StringBuilder();
+        for(MeasurementItem mi: measurementItems)
+        {
+            sb.append(mi.measureToText());
+        }
+        
+        return sb.toString();
+    }
+    
+    public static MeasurementItemSet fromText(String val) throws LikelihoodDistributionException, NoSuchAlgorithmException
+    {
+        if(val==null || val.trim().equalsIgnoreCase("")) return null;
+        
+        String items[]=val.split("\\*");
+        if(items==null || items.length<1) return null;
+        
+        MeasurementItemSet mis=new MeasurementItemSet();
+        for(int i=0;i<items.length;i++)
+        {
+            MeasurementItem it=MeasurementItem.fromText(items[i]);
+            if(it!=null) mis.add(it);
+        }
+        
+        return (mis.getItemsQuantity()>0)?mis:null;
+    }
+    
+   public static void main(String args[]) throws LikelihoodDistributionException, NoSuchAlgorithmException
+   {
+       MeasurementItemSet mis=new MeasurementItemSet();
+       MeasurementItem mi;
+       for(int i=0;i<5;i++) 
+       {
+           mi=MeasurementItem.factory("IDEntity1","dsid_1", "plaintext", "idMetric1", LikelihoodDistribution.factoryRandomDistributionEqualLikelihood(3L, 5l),"PRJ1","EC1");
+           mis.add(mi);
+       }
+       
+       String text=mis.measureToText();
+       String xml=TranslateXML.toXml(mis);
+       String json=TranslateJSON.toJSON(mis);
+       
+       System.out.println(text);
+       System.out.println("XML: "+(xml.getBytes().length)+" JSON: "+(json.getBytes().length)+"  Brief: "+(text.getBytes().length));
+       
+       MeasurementItemSet mis2=MeasurementItemSet.fromText(text);
+       if(mis2!=null)
+       {
+           System.out.println("ProjectID\t\tEC-ID\t\tEntityID\t\tdsID\t\tDatetime\t\tMetricID\t\tValue");
+           
+           for(MeasurementItem mit:mis2.getMeasurementItems())
+           {
+            System.out.println(mit.getProjectID()+"\t"+
+                   mit.getEntityCategoryID() + "\t"+
+                   mit.getIdEntity() + "\t"+
+                   mit.getDataSourceID()+"\t"+
+                   mit.getMeasurement().getDatetime()+ "\t"+
+                   mit.getMeasurement().getIdMetric()+ "\t"+
+                   mit.getMeasurement().getMeasure().getQuantitative().toString());
+           }
+       }
+       
+   }
 }

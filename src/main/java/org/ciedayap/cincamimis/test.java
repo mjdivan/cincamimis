@@ -33,7 +33,31 @@ public class test {
         //generarEstadisticasJSON(1000,100);
         //oneExample();
         //generarEstadisticasJSON_EnvelopeVaryingMeasurements(5000,100);
-        generarEstadisticasJSON_EnvelopeVaryingTime(500,5L);
+        //generarEstadisticasJSON_EnvelopeVaryingTime(500,5L);
+        testCincamimis_xmlVsjson();
+    }
+    
+    public static void testCincamimis_xmlVsjson() throws LikelihoodDistributionException, NoSuchAlgorithmException, Exception
+    {
+       LikelihoodDistribution ld=LikelihoodDistribution.factoryRandomDistributionEqualLikelihood(3L, 5L);        
+       MeasurementItem m=MeasurementItem.factory("idEntity1", "dsid1", "format", "idMetric1", ld,"PRJ1","EC1");
+       MeasurementItemSet mis=new MeasurementItemSet();
+       mis.add(m);
+       mis.add(m);
+       
+       Cincamimis flujo=new Cincamimis();
+       flujo.setDsAdapterID("adapter1");
+       flujo.setMeasurements(mis);
+       
+       //It transforms the CINCAMI/MIS objects to a XML string
+       String xml=TranslateXML.toXml(flujo.getClass(),flujo);
+       String json=TranslateJSON.toJSON(flujo);
+       System.out.println(xml);   
+       System.out.println(json);
+       
+       //Some indicative measures
+       System.out.println("Original bytes (XML): "+xml.getBytes().length);//Bytes without compression
+       System.out.println("Original bytes (JSON): "+json.getBytes().length);//Bytes without compression       
     }
     
     public static void testCincamimis_xml_and_compression() throws LikelihoodDistributionException, NoSuchAlgorithmException, Exception

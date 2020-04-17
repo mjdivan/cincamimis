@@ -8,6 +8,7 @@ package org.ciedayap.cincamimis;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Random;
 import javax.xml.bind.annotation.XmlElement;

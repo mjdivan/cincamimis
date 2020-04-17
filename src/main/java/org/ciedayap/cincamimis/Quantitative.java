@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
+import org.ciedayap.utils.TranslateJSON;
+import org.ciedayap.utils.TranslateXML;
 
 /**
  * It is responsible for managing the quantitative measures. The quantitative measure could be deterministic or
@@ -132,4 +134,90 @@ public class Quantitative implements Serializable{
         return q;
     }        
     
+    /**
+     * This represents one or more values such as pairs  (value, likelihood).
+     * When there not exist value, a null is returned.
+     * @return A string organized as a sequence of (value; likelihood), null when there not exist a value
+     */
+    public String measureToText()
+    {
+        if(this.deterministicValue==null && this.likelihoodDistribution==null) return null;
+        StringBuilder sb=new StringBuilder();
+        
+        if(deterministicValue!=null)
+            sb.append("(").append(deterministicValue).append(";1)");
+        else
+        {
+            if(this.likelihoodDistribution.getLikelihoodDistributions()==null ||
+                    this.likelihoodDistribution.getLikelihoodDistributions().isEmpty()) return null;
+            
+            for(Estimated est:this.likelihoodDistribution.getLikelihoodDistributions())
+            {
+                sb.append("(").append(est.getValue()).append(";").append(est.getLikelihood()).append(")");
+            }
+        }
+        
+        return sb.toString();
+    }
+    
+    public static Quantitative fromText(String val) throws LikelihoodDistributionException
+    {
+        if(val==null || val.trim().equalsIgnoreCase("")) return null;
+        
+        ArrayList<Estimated> volume=new ArrayList();
+        String elems[]=val.split("\\(");
+        for(int i=0;i<elems.length;i++)
+        {
+            elems[i]=elems[i].replace(")", "");
+            if(elems[i]!=null && elems[i].contains(";"))
+            {
+                String components[]=elems[i].split(";");
+                BigDecimal value=new BigDecimal(components[0]);
+                BigDecimal likelihood=new BigDecimal(components[1]);
+                
+                volume.add(Estimated.factory(value, likelihood));
+            }
+        }
+        
+        if(volume.isEmpty()) return null;
+        
+        if(volume.size()==1)
+        {//Deterministic
+            return Quantitative.factoryDeterministicQuantitativeMeasure(volume.get(0).getValue());
+        }
+
+        return Quantitative.factoryEstimatedQuantitativeMeasure(volume);
+    }
+    
+    public static void main(String args[]) throws LikelihoodDistributionException
+    {
+        LikelihoodDistribution ld=LikelihoodDistribution.factoryRandomDistributionEqualLikelihood(3L, 5L);        
+        Quantitative q=Quantitative.factoryEstimatedQuantitativeMeasure(ld);
+        String text=q.measureToText();
+        System.out.println(text);
+        
+       //Obtaining the Object
+       Quantitative ptr=Quantitative.fromText(text);
+       System.out.println(ptr.toString());
+       ArrayList<Estimated> list=ptr.getLikelihoodDistribution().getLikelihoodDistributions();
+       for(Estimated est:list)
+       {
+           System.out.println("Value: "+est.getValue()+" Likelihood: "+est.getLikelihood());
+       }
+               
+        q=Quantitative.factoryDeterministicQuantitativeMeasure(new BigDecimal("7.68954"));
+        text=q.measureToText();
+        System.out.println(text);
+       System.out.println(TranslateXML.toXml(ptr));
+       System.out.println(TranslateJSON.toJSON(ptr));
+        
+        
+       //Obtaining the Object
+       ptr=Quantitative.fromText(text);
+       System.out.println(ptr.toString());              
+       
+       System.out.println(TranslateXML.toXml(ptr));
+       System.out.println(TranslateJSON.toJSON(ptr));
+       
+    }
 }
