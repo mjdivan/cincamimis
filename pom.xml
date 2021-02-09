@@ -33,4 +33,24 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
+    <description>Measurement Interchange Schema based on a Measurement Ontology</description>
+    <name>cincamimis</name>
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <id>mjdivan</id>
+            <name>Mario Jose Divan</name>
+            <email>mjdivan@eco.unlpam.edu.ar</email>
+        </developer>
+    </developers>
+    <scm>
+        <connection>scm:git:git@github.com:mjdivan/cincamimis.git</connection>
+        <developerConnection>scm:git:ssh://github.com:mjdivan/cincamimis.git</developerConnection>
+        <url>https://github.com/mjdivan/cincamimis/</url>
+    </scm>    
 </project>

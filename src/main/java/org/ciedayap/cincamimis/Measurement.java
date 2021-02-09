@@ -109,7 +109,7 @@ public class Measurement implements Serializable{
     /**
      * It creates a Measurement object from the idMetric and the deterministic value
      * 
-     * @param idmetric ID associated with the metric in the M&E project
+     * @param idmetric ID associated with the metric in the M and E project
      * @param deterministicValue The deterministic value to be incorporated in the Measurement object
      * @return A measurement objetct with the deterministic value
      */
@@ -126,7 +126,7 @@ public class Measurement implements Serializable{
    
     /**
      * It creates a Measurement object from the idmetric and the likelihood distribution
-     * @param idmetric ID associated with the metric in the M&E projects
+     * @param idmetric ID associated with the metric in the M and E projects
      * @param ld The likelihood distribution
      * @return A Measurement object with the idmetric and the likehihood distribution
      * @throws LikelihoodDistributionException 
@@ -145,7 +145,7 @@ public class Measurement implements Serializable{
 
     /**
      * It creates a Measurement object from the idMetric and an ArrayList object with a set of Estimated instance
-     * @param idmetric ID associated with the metric in the M&E project
+     * @param idmetric ID associated with the metric in the M and E project
      * @param ld_list List of Estimated objects
      * @return A Measurement object with the idmetric and the likelihood distribution
      * @throws LikelihoodDistributionException 

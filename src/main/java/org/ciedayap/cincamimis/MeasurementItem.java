@@ -31,7 +31,7 @@ public class MeasurementItem implements Serializable{
      */
     private transient java.security.MessageDigest md5;
     /**
-     * This is the ID entity defined in the M&E projectd based on C-INCAMI framework
+     * This is the ID entity defined in the M and E projectd based on C-INCAMI framework
      */
     private String idEntity;
     /**
@@ -43,7 +43,7 @@ public class MeasurementItem implements Serializable{
      */
     private Context context;
     /**
-     * It represents the data source identification along the M&E project
+     * It represents the data source identification along the M and E project
      */
     private String dataSourceID;
     /**
@@ -94,7 +94,7 @@ public class MeasurementItem implements Serializable{
     }
 
     /**
-     * @return the idEntity under monitoring defined in the M&E project
+     * @return the idEntity under monitoring defined in the M and E project
      */
     @XmlElement(name="idEntity")
     public String getIdEntity() {
@@ -227,7 +227,7 @@ public class MeasurementItem implements Serializable{
     /**
      * It creates a MeasurementItem object with the given parameters.This object does not contain complementary data 
  and context information
-     * @param idEntity ID entity in the M&E project
+     * @param idEntity ID entity in the M and E project
      * @param dsid Data source ID
      * @param format Native format related to the data source
      * @param idMetric ID Metric associated with the entity´s attribute
@@ -255,7 +255,7 @@ public class MeasurementItem implements Serializable{
     /**
      * It creates a deterministic MeasurementItem object with the given parameters.This object does not contain complementary data 
  and context information
-     * @param idEntity ID entity in the M&E project
+     * @param idEntity ID entity in the M and E project
      * @param dsid Data source ID
      * @param format Native format related to the data source
      * @param idMetric ID Metric associated with the entity´s attribute
